@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const NavBar: React.FC = () => {
+interface NavBarProps {
+  userType?: 'eleve' | 'moniteur' | 'admin';
+}
+
+const NavBar: React.FC<NavBarProps> = ({ userType = 'eleve' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState(2);
   const navigate = useNavigate();
@@ -10,34 +14,77 @@ const NavBar: React.FC = () => {
     navigate(path);
   };
 
+  // Déterminer le nom et la couleur en fonction du type d'utilisateur
+  const getUserTypeInfo = () => {
+    switch(userType) {
+      case 'moniteur':
+        return { name: 'Moniteur', color: 'from-green-700 to-green-900' };
+      case 'admin':
+        return { name: 'Admin', color: 'from-purple-700 to-purple-900' };
+      default:
+        return { name: 'Élève', color: 'from-blue-700 to-blue-900' };
+    }
+  };
+
+  const { name, color } = getUserTypeInfo();
+
+  // Déterminer les liens de navigation en fonction du type d'utilisateur
+  const getNavigationLinks = () => {
+    switch(userType) {
+      case 'moniteur':
+        return [
+          { path: '/moniteur', label: 'Tableau de bord' },
+          { path: '/eleves', label: 'Mes élèves' },
+          { path: '/planning', label: 'Planning' },
+          { path: '/evaluations', label: 'Évaluations' }
+        ];
+      case 'admin':
+        return [
+          { path: '/admin', label: 'Tableau de bord' },
+          { path: '/utilisateurs', label: 'Utilisateurs' },
+          { path: '/statistiques', label: 'Statistiques' },
+          { path: '/configuration', label: 'Configuration' }
+        ];
+      default:
+        return [
+          { path: '/dashboard', label: 'Tableau de bord' },
+          { path: '/cours', label: 'Réserver un cours' },
+          { path: '/progres', label: 'Mes progrès' },
+          { path: '/messages', label: 'Messages' }
+        ];
+    }
+  };
+
+  const navLinks = getNavigationLinks();
+
   return (
-    <nav className="bg-gradient-to-r from-blue-700 to-blue-900 text-white shadow-lg">
+    <nav className={`bg-gradient-to-r ${color} text-white shadow-lg`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <button onClick={() => handleNavigation("/")}>
+              <button onClick={() => handleNavigation("/")} className="flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
                   <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H11a1 1 0 001-1v-1h3.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-4a1 1 0 00-.293-.707l-2-2A1 1 0 0017 6h-3V4a1 1 0 00-1-1H3z" />
                 </svg>
                 <span className="font-bold text-xl">AutoÉcole Pro</span>
+                <span className="ml-2 px-2 py-1 text-xs font-medium bg-white text-gray-800 rounded-full">
+                  {name}
+                </span>
               </button>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
-                <button onClick={() => handleNavigation("/dashboard")} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors duration-200">
-                  Tableau de bord
-                </button>
-                <button onClick={() => handleNavigation("/cours")} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors duration-200">
-                  Réserver un cours
-                </button>
-                <button onClick={() => handleNavigation("/progres")} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors duration-200">
-                  Mes progrès
-                </button>
-                <button onClick={() => handleNavigation("/messages")} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors duration-200">
-                  Messages
-                </button>
+                {navLinks.map((link, index) => (
+                  <button 
+                    key={index}
+                    onClick={() => handleNavigation(link.path)} 
+                    className="px-3 py-2 rounded-md text-sm font-medium hover:bg-opacity-75 transition-colors duration-200"
+                  >
+                    {link.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -100,18 +147,15 @@ const NavBar: React.FC = () => {
       {isOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <button onClick={() => handleNavigation("/dashboard")} className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-800 transition-colors duration-200">
-              Tableau de bord
-            </button>
-            <button onClick={() => handleNavigation("/cours")} className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-800 transition-colors duration-200">
-              Réserver un cours
-            </button>
-            <button onClick={() => handleNavigation("/progres")} className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-800 transition-colors duration-200">
-              Mes progrès
-            </button>
-            <button onClick={() => handleNavigation("/messages")} className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-800 transition-colors duration-200">
-              Messages
-            </button>
+            {navLinks.map((link, index) => (
+              <button 
+                key={index}
+                onClick={() => handleNavigation(link.path)} 
+                className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-800 transition-colors duration-200"
+              >
+                {link.label}
+              </button>
+            ))}
           </div>
           <div className="pt-4 pb-3 border-t border-blue-800">
             <div className="flex items-center px-5">
